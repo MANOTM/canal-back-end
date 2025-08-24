@@ -1,7 +1,6 @@
 import Article from "../models/article.model.js";
-import cloudinary from '../config/cloudinary.js';
-import fs from 'fs';
-
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 
 // GET /api/articles?page=1
 
@@ -58,7 +57,9 @@ export async function createArticle(req, res, next) {
     const { name, desc, price } = req.body;
 
     if (!name || !desc || !req.file) {
-      return res.status(400).json({ message: 'Name, description, and mainImg are required' });
+      return res
+        .status(400)
+        .json({ message: "Name, description, and mainImg are required" });
     }
 
     // Upload to Cloudinary
@@ -90,14 +91,14 @@ export async function getArticlesFiltered(req, res, next) {
     // Build filter object dynamically
     const filter = {};
 
-    if (category && category !== 'All') {
-      filter.category = { $regex: `^${category}$`, $options: 'i' };  
+    if (category && category !== "All") {
+      filter.category = { $regex: `^${category}$`, $options: "i" };
     }
 
     if (search && search.trim() !== "") {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { desc: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: "i" } },
+        { desc: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -126,3 +127,30 @@ export async function getArticlesFiltered(req, res, next) {
     next(err);
   }
 }
+
+// Simple search (max 5 results)
+export const searchArticles = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    if (!search || search.trim() === "") {
+      return res.json([]);
+    }
+
+    // case-insensitive search on "title" or "content"
+    const articles = await Article.find({
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { content: { $regex: search, $options: "i" } },
+      ],
+    })
+      .select("name mainImg")
+      .limit(5);
+
+    res.json(articles);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error searching articles", error: error.message });
+  }
+};

@@ -1,10 +1,11 @@
 import { Router } from "express";
-import multer from 'multer';
+import multer from "multer";
 import {
-  getArticlesPaginated,
+  // getArticlesPaginated,
   getArticleByName,
   createArticle,
-  getArticlesFiltered 
+  getArticlesFiltered,
+  searchArticles,
 } from "../controllers/article.controller.js";
 
 const upload = multer({ storage: multer.diskStorage({}) });
@@ -14,12 +15,15 @@ const router = Router();
 // router.get("/", getArticlesPaginated);
 
 // GET filtered & searched articles paginated
-router.get('/', getArticlesFiltered);
+router.get("/", getArticlesFiltered);
+
+// get 5 article max
+router.get("/search", searchArticles);
 
 // GET /api/articles/:name → single article by name
 router.get("/:name", getArticleByName);
 
 // POST /api/articles → create new article
-router.post("/",upload.single('mainImg'),createArticle);
+router.post("/", upload.single("mainImg"), createArticle);
 
 export default router;
