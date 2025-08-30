@@ -154,3 +154,19 @@ export const searchArticles = async (req, res) => {
       .json({ message: "Error searching articles", error: error.message });
   }
 };
+
+// Get the latest 6 articles
+export async function getLatestArticles(req, res, next) {
+  try {
+    const articles = await Article.find()
+      .sort({ createdAt: -1 }) // newest first
+      .limit(6);               // only last 6
+
+    res.status(200).json({
+      message: "Latest 6 articles",
+      articles,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
